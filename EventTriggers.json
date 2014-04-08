@@ -1,0 +1,28 @@
+[
+  {
+    "type": "daily",
+    "start_time": "15:30:00",
+    "end_time": "18:00:00",
+    "input_states": [
+      {
+        "garage_door": 1
+      }
+    ],
+    "events": [
+      "Garage_open"
+    ]
+  },
+  {
+    "type": "daily",
+    "start_time": "16:35:00",
+    "end_time": "16:40:00",
+    "input_states": [
+      {
+        "garage_door": 1
+      }
+    ],
+    "events": [
+      "Garage_close"
+    ]
+  }  
+]
