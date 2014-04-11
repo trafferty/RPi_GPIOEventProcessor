@@ -26,8 +26,8 @@ class EventProcessor:
     st = [int(n) for n in start_time.split(':')]
     et = [int(n) for n in end_time.split(':')]
     current = datetime.datetime.now().time()
-    start   = datetime.time(st[0], st[1], st[2])
-    end     = datetime.time(et[0], et[1], et[2])
+    start   = datetime.time(*st)
+    end     = datetime.time(*et)
     return start <= current <= end
 
   def start(self):
