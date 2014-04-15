@@ -1,28 +1,53 @@
 [
   {
     "type": "daily",
-    "start_time": "15:30:00",
-    "end_time": "18:00:00",
-    "input_states": [
+    "start_time": "0:00:01",
+    "end_time": "7:00:00",
+    "input_events": [
       {
-        "garage_door": 1
+        "name": "garage_door",
+        "value": 1,
+        "event": "Garage_open_alert"
+      },
+      {
+        "name": "garage_door",
+        "value": 0,
+        "event": "Garage_closed"
       }
-    ],
-    "events": [
-      "Garage_open"
     ]
   },
   {
     "type": "daily",
-    "start_time": "16:35:00",
-    "end_time": "16:40:00",
+    "start_time": "7:00:01",
+    "end_time": "20:00:00",
     "input_states": [
       {
-        "garage_door": 1
+        "name": "garage_door",
+        "value": 1,
+        "event": "Garage_open_normal"
+      },
+      {
+        "name": "garage_door",
+        "value": 0,
+        "event": "Garage_closed"
       }
-    ],
-    "events": [
-      "Garage_close"
     ]
-  }  
+  },
+    {
+    "type": "daily",
+    "start_time": "20:00:01",
+    "end_time": "23:59:59",
+    "input_states": [
+      {
+        "name": "garage_door",
+        "value": 1,
+        "event": "Garage_open_alert"
+      },
+      {
+        "name": "garage_door",
+        "value": 0,
+        "event": "Garage_closed"
+      }
+    ]
+  }
 ]
