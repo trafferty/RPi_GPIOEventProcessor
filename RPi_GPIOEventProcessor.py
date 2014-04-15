@@ -1,18 +1,29 @@
 import time, datetime, threading, sys, json
-import RPi.GPIO as io
-io.setmode(io.BCM)
+import argparse
+
+try:
+    import RPi.GPIO as io
+    io.setmode(io.BCM)
+    sim_mode = False
+except ImportError:
+    print " --------- Running in RPi Simulation mode (input values are random, outputs are skipped) ----------"
+    from random import randint
+    sim_mode = True
 
 (STOPPED, RUNNING) = range(2)
 
 class GPIOEventMonitor:
     """ GPIO Event monitor object"""
 
-    def __init__(self, gpio_settings, event_triggers):
+    def __init__(self, gpio_settings, event_triggers, sim_mode, sleep_time=1.0):
         self.event_triggers = event_triggers
         self.gpio_settings = gpio_settings
         self.eventCallback = None
         self.state = STOPPED
-        self.setupGPIO()
+        self.sim_mode = sim_mode
+        self.sleep_time = sleep_time
+        if not sim_mode:
+            self.setupGPIO()
         self.input_states = {}
         print "initialized GPIO event processor object"
 
@@ -37,7 +48,10 @@ class GPIOEventMonitor:
     def updateInputs(self):
         for key in self.gpio_settings['inputs']:
             input = self.gpio_settings['inputs'][key]
-            self.input_states[key] = io.input(input[0])
+            if not sim_mode:
+                self.input_states[key] = io.input(input[0])
+            else:
+                self.input_states[key] = randint(0,1)
 
     def withinRange(self, start_time, end_time):
         '''
@@ -76,34 +90,61 @@ class GPIOEventMonitor:
             for trigger in self.event_triggers:
                 # First see if current time falls within trigger's 
                 # start and end times...
-                if withinRange(trigger['start_time'], trigger['end_time']):
-                    for input_event in self.input_states[trigger['input_events']]:
-                        if self.input_states[input_event['name']] == input_event['value'] \
+                if self.withinRange(trigger['start_time'], trigger['end_time']):
+                    for input_event in trigger['input_events']:
+                        if input_event['value'] == self.input_states[input_event['name']] \
                         and self.eventCallback:
-                            print 'calling callback for %d event(s)...' % (len(trigger['events']))
                             self.eventCallback(input_event['event'])
-            time.sleep(1.0)
+            time.sleep(self.sleep_time)
             continue
 
-class EventProcessor:
+class GPIOEventProcessor:
     """ Event Processor object"""
 
-    def eventCB(event):
-        print 'Received callback: %s' % (event)
+    def __init__(self, sim_mode, log_file):
+        self.sim_mode = sim_mode
+        self.log_file = log_file
+
+    def eventCB(self, event):
+        if event == 'Garage_open_normal':
+            self.garage_open_event(False)
+        elif event == 'Garage_open_alert':
+            self.garage_open_event(True)
+        elif event == 'Garage_closed':
+            self.garage_close_event()
+        else:
+            self.doLog('Unhandled event: %s' % (event))
+
+    def garage_open_event(self, alert_flag):
+        self.doLog("Processing garage_open_event, alert = %d" % (alert_flag)) 
+
+    def garage_close_event(self):
+        self.doLog("Processing garage_close_event") 
+
+    def doLog(self, log_msg):
+        msg = "%s: %s" % (time.strftime("[%Y_%d_%m (%a) - %H:%M:%S]", time.localtime()), log_msg)
+        print msg
+        if len(self.log_file) > 0: 
+            f = open(self.log_file, 'a')
+            f.write(msg + '\n')
+            f.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Event monitor system for Raspberry Pi')
-    parser.add_argument('-g', '--gpio_setup', type=str, default="", help='JSON file defining GPIO setup')
-    parser.add_argument('-e', '--events', type=str, default="", help='JSON file defining the events to monitor')
+    parser.add_argument('-g', '--gpio_setup', type=str, help='JSON file defining GPIO setup', required=True)
+    parser.add_argument('-e', '--events', type=str, help='JSON file defining the events to monitor', required=True)
+    parser.add_argument('-l', '--log_file', type=str, default='', help='log file path for processor (optional)', required=False)
+    parser.add_argument('-s', '--sleep_time', type=float, default=1.0, help='sleep time for event loop, in secs')
+    args = parser.parse_args()
 
-    gpio_settings = json.load(open(parser.gpio_setup, 'r'))
-    event_triggers = json.load(open(parser.events, 'r'))
+    gpio_settings = json.load(open(args.gpio_setup, 'r'))
+    event_triggers = json.load(open(args.events, 'r'))
 
-    eventMonitor = EventMonitor(gpio_settings, event_triggers)
+    eventMonitor = GPIOEventMonitor(gpio_settings, event_triggers, sim_mode, args.sleep_time)
 
-    eventProcessor = GPIOEventMonitor()
+    eventProcessor = GPIOEventProcessor(sim_mode, args.log_file)
 
-    eventMonitor.setCallback = eventProcessor.eventCB
+    eventMonitor.setCallback(eventProcessor.eventCB)
     eventMonitor.start()
 
     while 1:
@@ -114,4 +155,5 @@ if __name__ == '__main__':
             raise
             break
       
+    eventMonitor.stop()
     eventMonitor.join()
