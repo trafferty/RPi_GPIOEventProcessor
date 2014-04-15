@@ -18,7 +18,7 @@ class GPIOEventMonitor:
     def __init__(self, gpio_settings, event_triggers, sim_mode, sleep_time=1.0):
         self.event_triggers = event_triggers
         self.gpio_settings = gpio_settings
-        self.eventCallback = None
+        self.eventCallbackList = []
         self.state = STOPPED
         self.sim_mode = sim_mode
         self.sleep_time = sleep_time
@@ -27,10 +27,10 @@ class GPIOEventMonitor:
         self.input_states = {}
         print "initialized GPIO event processor object"
 
-    def setCallback(self, callbackFuncion):
-        self.eventCallback = callbackFuncion
-        print "callback set"
-        self.eventCallback("test callback")
+    def addCallback(self, callbackFuncion):
+        self.eventCallbackList.append(callbackFuncion)
+        print "callback added"
+        callbackFuncion("test callback")
         
     def getRunState(self):
         return self.state
@@ -93,15 +93,17 @@ class GPIOEventMonitor:
                 if self.withinRange(trigger['start_time'], trigger['end_time']):
                     for input_event in trigger['input_events']:
                         if input_event['value'] == self.input_states[input_event['name']] \
-                        and self.eventCallback:
-                            self.eventCallback(input_event['event'])
+                        and len(self.eventCallbackList) > 0:
+                            for eventCallback in self.eventCallbackList:
+                                eventCallback(input_event['event'])
             time.sleep(self.sleep_time)
             continue
 
 class GPIOEventProcessor:
     """ Event Processor object"""
 
-    def __init__(self, sim_mode, log_file):
+    def __init__(self, gpio_settings, sim_mode, log_file):
+        self.gpio_settings = gpio_settings
         self.sim_mode = sim_mode
         self.log_file = log_file
 
@@ -142,9 +144,9 @@ if __name__ == '__main__':
 
     eventMonitor = GPIOEventMonitor(gpio_settings, event_triggers, sim_mode, args.sleep_time)
 
-    eventProcessor = GPIOEventProcessor(sim_mode, args.log_file)
+    eventProcessor = GPIOEventProcessor(gpio_settings, sim_mode, args.log_file)
 
-    eventMonitor.setCallback(eventProcessor.eventCB)
+    eventMonitor.addCallback(eventProcessor.eventCB)
     eventMonitor.start()
 
     while 1:
