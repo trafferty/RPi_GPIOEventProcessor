@@ -20,7 +20,7 @@
     "type": "daily",
     "start_time": "7:00:01",
     "end_time": "20:00:00",
-    "input_states": [
+    "input_events": [
       {
         "name": "garage_door",
         "value": 1,
@@ -37,7 +37,7 @@
     "type": "daily",
     "start_time": "20:00:01",
     "end_time": "23:59:59",
-    "input_states": [
+    "input_events": [
       {
         "name": "garage_door",
         "value": 1,
