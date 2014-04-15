@@ -31,7 +31,6 @@ class GPIOEventMonitor:
                 io.setup(input[0], io.IN, pull_up_down=io.PUD_UP)
             else:
                 io.setup(input[0], io.IN)
-            self.input_states[key] = io.input(door_pin)
         for key in self.gpio_settings['outputs']:
             io.setup(self.gpio_settings['outputs'][key], io.OUT)
 
@@ -73,7 +72,7 @@ class GPIOEventMonitor:
     def monitorEvents(self):
         print "Event processing thread started."
         while self.alive:
-            updateInputs()
+            self.updateInputs()
             for trigger in self.event_triggers:
                 # First see if current time falls within trigger's 
                 # start and end times...
@@ -102,7 +101,7 @@ if __name__ == '__main__':
 
     eventMonitor = EventMonitor(gpio_settings, event_triggers)
 
-    eventProcessor = EventProcessor()
+    eventProcessor = GPIOEventMonitor()
 
     eventMonitor.setCallback = eventProcessor.eventCB
     eventMonitor.start()
