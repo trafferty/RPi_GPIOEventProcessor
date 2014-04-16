@@ -1,11 +1,9 @@
 {
   "outputs": {
-    "led": 27,
+    "heartbeat_led": 27,
     "buzzer": 4,
-    "relay1": 22,
-    "relay2": 23,
-    "relay3": 24,
-    "relay4": 25
+    "audio_stream_relay": 22,
+    "lights_relay": 23
   },
   "inputs": {
     "garage_door": [
