@@ -49,5 +49,22 @@
         "event": "Garage_closed"
       }
     ]
+  },
+  {
+    "type": "daily",
+    "start_time": "0:00:01",
+    "end_time": "23:59:59",
+    "input_events": [
+      {
+        "name": "garage_door",
+        "value": 1,
+        "event": "heartbeat"
+      },
+      {
+        "name": "garage_door",
+        "value": 0,
+        "event": "heartbeat"
+      }
+    ]
   }
 ]

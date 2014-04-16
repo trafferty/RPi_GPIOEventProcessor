@@ -99,7 +99,7 @@ class GPIOEventMonitor:
             time.sleep(self.sleep_time)
             continue
 
-class GPIOEventProcessor:
+class GPIOEventProcessor(object):
     """ Event Processor object"""
 
     def __init__(self, gpio_settings, sim_mode, log_file):
@@ -108,7 +108,35 @@ class GPIOEventProcessor:
         self.log_file = log_file
 
     def eventCB(self, event):
-        if event == 'Garage_open_normal':
+        self.doLog('Default handler for event: %s' % (event))
+
+    def doLog(self, log_msg):
+        msg = "%s: %s" % (time.strftime("[%Y_%d_%m (%a) - %H:%M:%S]", time.localtime()), log_msg)
+        print msg
+        if len(self.log_file) > 0: 
+            f = open(self.log_file, 'a')
+            f.write(msg + '\n')
+            f.close()
+
+(S_UNKNOWN, S_OPEN, S_CLOSED) = range(3)
+
+class GarageDoorEventProcessor(GPIOEventProcessor):
+    """ garage Door Event Processor object"""
+
+    def __init__(self, gpio_settings, sim_mode, log_file):
+        super(GarageDoorEventProcessor, self).__init__(gpio_settings, sim_mode, log_file)
+        self.garageDoorCurrentPos = S_UNKNOWN
+        self.lastOpenedTime = 0
+        self.lastClosedTime = 0
+        self.heartbeat_state = 0
+        self.lights_state = 0
+        self.opened_threshold_1 = 60 * 10
+        self.opened_threshold_2 = 60 * 60
+
+    def eventCB(self, event):
+        if event == 'heartbeat':
+            self.heartbeat()
+        elif event == 'Garage_open_normal':
             self.garage_open_event(False)
         elif event == 'Garage_open_alert':
             self.garage_open_event(True)
@@ -118,18 +146,55 @@ class GPIOEventProcessor:
             self.doLog('Unhandled event: %s' % (event))
 
     def garage_open_event(self, alert_flag):
-        self.doLog("Processing garage_open_event, alert = %d" % (alert_flag)) 
+        self.doLog("Processing garage_open_event, alert = %d" % (alert_flag))
+        current_ts = time.time()
+        if self.lastOpenedTime == 0:
+            self.lastOpenedTime = current_ts
+        if alert_flag:
+            self.buzzer(2)
+            self.lights_state = self.lights_state^1
+            self.lights(self.lights_state)
+        else:
+            time_opened = current_ts - self.lastOpenedTime
+            if time_opened > self.opened_threshold_1 \
+            and time_opened < self.opened_threshold_:
+                self.lights_state = 1
+                self.lights(self.lights_state)
 
     def garage_close_event(self):
         self.doLog("Processing garage_close_event") 
 
-    def doLog(self, log_msg):
-        msg = "%s: %s" % (time.strftime("[%Y_%d_%m (%a) - %H:%M:%S]", time.localtime()), log_msg)
-        print msg
-        if len(self.log_file) > 0: 
-            f = open(self.log_file, 'a')
-            f.write(msg + '\n')
-            f.close()
+    def heartbeat(self):
+        self.heartbeat_state = self.heartbeat_state^1
+        if not sim_mode:
+            heartbeat_led = self.gpio_settings['outputs']['heartbeat_led']
+            if self.heartbeat_state == 0:
+                io.output(heartbeat_led, io.LOW)
+            else:
+                io.output(heartbeat_led, io.HIGH)
+        else:
+            self.doLog("Heartbeat signal received. State = %d" % self.heartbeat_state)
+
+    def lights(self, on):
+        if not sim_mode:
+            lights_relay = self.gpio_settings['outputs']['lights_relay']
+            if on:
+                io.output(lights_relay, io.LOW)
+            else:
+                io.output(lights_relay, io.HIGH)
+        else:
+            self.doLog("Lights turned %s" % ("on" if on else "off"))
+
+    def buzzer(self, num_of_times):
+        for idx in range(num_of_times):
+            if not sim_mode:
+                buzzer_pin = self.gpio_settings['outputs']['buzzer']
+                io.output(buzzer_pin, io.HIGH)
+                time.sleep(0.3)
+                io.output(buzzer_pin, io.LOW)
+                time.sleep(0.2)
+            else:
+                self.doLog("Buzzer: %d of %d!!" % (idx+1, num_of_times))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Event monitor system for Raspberry Pi')
@@ -144,7 +209,7 @@ if __name__ == '__main__':
 
     eventMonitor = GPIOEventMonitor(gpio_settings, event_triggers, sim_mode, args.sleep_time)
 
-    eventProcessor = GPIOEventProcessor(gpio_settings, sim_mode, args.log_file)
+    eventProcessor = GarageDoorEventProcessor(gpio_settings, sim_mode, args.log_file)
 
     eventMonitor.addCallback(eventProcessor.eventCB)
     eventMonitor.start()
