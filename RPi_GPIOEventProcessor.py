@@ -1,4 +1,4 @@
-import time, datetime, threading, sys, json
+import time, datetime, threading, signal, sys, json
 import argparse
 
 try:
@@ -222,6 +222,12 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
                 self.doLog("Buzzer: %d of %d..." % (idx+1, num_of_times))
 
 if __name__ == '__main__':
+
+    def sigint_handler(signal, frame):
+        print "Caught Ctrl-c..."
+        eventMonitor.stop()
+    signal.signal(signal.SIGINT, sigint_handler)
+
     parser = argparse.ArgumentParser(description='Event monitor system for Raspberry Pi')
     parser.add_argument('-g', '--gpio_setup', type=str, help='JSON file defining GPIO setup', required=True)
     parser.add_argument('-e', '--events', type=str, help='JSON file defining the events to monitor', required=True)
@@ -233,19 +239,9 @@ if __name__ == '__main__':
     event_triggers = json.load(open(args.events, 'r'))
 
     eventMonitor = GPIOEventMonitor(gpio_settings, event_triggers, sim_mode, args.sleep_time)
-
     eventProcessor = GarageDoorEventProcessor(gpio_settings, sim_mode, args.log_file)
 
     eventMonitor.addCallback(eventProcessor.eventCB)
     eventMonitor.start()
-
-    while 1:
-        time.sleep(1.0)
-        try:
-            pass
-        except KeyboardInterrupt, k:
-            raise
-            break
-      
-    eventMonitor.stop()
+    signal.pause()
     eventMonitor.join()
