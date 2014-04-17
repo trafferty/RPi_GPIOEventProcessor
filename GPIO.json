@@ -1,6 +1,6 @@
 {
   "outputs": {
-    "heartbeat_led": 27,
+    "heartbeat_led": 25,
     "buzzer": 4,
     "audio_stream_relay": 22,
     "lights_relay": 23
