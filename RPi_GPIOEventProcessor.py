@@ -138,55 +138,57 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
     def eventCB(self, event):
         if event == 'heartbeat':
             self.heartbeat()
-        elif event == 'Garage_open_normal' and self.garageDoor_state != S_OPEN:
+        elif event == 'Garage_open_normal':
             self.garage_open_event(False)
-        elif event == 'Garage_open_alert' and self.garageDoor_state != S_OPEN:
+        elif event == 'Garage_open_alert':
             self.garage_open_event(True)
-        elif event == 'Garage_closed' and self.garageDoor_state != S_CLOSED:
+        elif event == 'Garage_closed':
             self.garage_close_event()
         else:
             self.doLog('Unhandled event: %s' % (event))
 
     def garage_open_event(self, alert_flag):
-        self.doLog("Processing garage_open_event, alert = %d" % (alert_flag))
-        current_ts = time.time()
-        if self.lastOpenedTime == 0:
-            self.garageDoor_state = S_OPEN
-            self.lastOpenedTime = current_ts
-            self.lights_state = S_ON
-            self.setLights(self.lights_state)
-            self.buzzer(2)
-        how_long_opened = current_ts - self.lastOpenedTime
-
-        if alert_flag:
-            self.setLights(S_OFF)
-            self.buzzer(2)
-            self.setLights(S_ON)
-            self.buzzer(2)
-            self.setLights(S_OFF)
-            self.buzzer(2)
-            self.setLights(S_ON)
-            self.lights_state = S_ON
+        if self.garageDoor_state == S_OPEN:
+            self.doLog("Nothing to do...opened for %ds" % (time.time() - self.lastOpenedTime))
         else:
-            if how_long_opened > self.opened_threshold_1:
-                self.setLights(S_OFF)
-                self.setLights(S_ON)
+            self.doLog("Processing garage_open_event, alert = %d" % (alert_flag))
+            current_ts = time.time()
+            if self.lastOpenedTime == 0:
+                self.garageDoor_state = S_OPEN
+                self.lastOpenedTime = current_ts
                 self.lights_state = S_ON
-            elif how_long_opened > self.opened_threshold_2:
+                self.setLights(self.lights_state)
+                self.buzzer(2)
+            how_long_opened = current_ts - self.lastOpenedTime
+
+            if alert_flag:
+                self.setLights(S_OFF)
+                self.buzzer(2)
+                self.setLights(S_ON)
+                self.buzzer(2)
                 self.setLights(S_OFF)
                 self.buzzer(2)
                 self.setLights(S_ON)
                 self.lights_state = S_ON
             else:
-                self.doLog("Nothing to do...opened for %ds" % (how_long_opened))
+                if how_long_opened > self.opened_threshold_1:
+                    self.setLights(S_OFF)
+                    self.setLights(S_ON)
+                    self.lights_state = S_ON
+                elif how_long_opened > self.opened_threshold_2:
+                    self.setLights(S_OFF)
+                    self.buzzer(2)
+                    self.setLights(S_ON)
+                    self.lights_state = S_ON
 
     def garage_close_event(self):
-        self.doLog("Processing garage_close_event")
-        self.garageDoor_state = S_CLOSED
-        self.lastOpenedTime = 0
-        self.lights_state = S_OFF
-        self.setLights(self.lights_state)
-        self.buzzer(3)
+        if self.garageDoor_state != S_CLOSED:
+            self.doLog("Processing garage_close_event")
+            self.garageDoor_state = S_CLOSED
+            self.lastOpenedTime = 0
+            self.lights_state = S_OFF
+            self.setLights(self.lights_state)
+            self.buzzer(3)
 
     def heartbeat(self):
         # flip the state...
