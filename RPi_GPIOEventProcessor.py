@@ -138,11 +138,11 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
     def eventCB(self, event):
         if event == 'heartbeat':
             self.heartbeat()
-        elif event == 'Garage_open_normal':
+        elif event == 'Garage_open_normal' and self.garageDoor_state != S_OPEN:
             self.garage_open_event(False)
-        elif event == 'Garage_open_alert':
+        elif event == 'Garage_open_alert' and self.garageDoor_state != S_OPEN:
             self.garage_open_event(True)
-        elif event == 'Garage_closed':
+        elif event == 'Garage_closed' and self.garageDoor_state != S_CLOSED:
             self.garage_close_event()
         else:
             self.doLog('Unhandled event: %s' % (event))
@@ -178,7 +178,7 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
                 self.setLights(S_ON)
                 self.lights_state = S_ON
             else:
-                self.doLog("Nothing to do...")
+                self.doLog("Nothing to do...opened for %ds" % (how_long_opened))
 
     def garage_close_event(self):
         self.doLog("Processing garage_close_event")
