@@ -132,22 +132,22 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
         self.heartbeat_state = 0
         self.lights_state = S_OFF
         self.setLights(self.lights_state)
-        self.opened_threshold_1 = 60 * 1
-        self.opened_threshold_2 = 60 * 2
+        self.opened_threshold_1 = 60 * 10
+        self.opened_threshold_2 = 60 * 60
 
     def eventCB(self, event):
         if event == 'heartbeat':
             self.heartbeat()
         elif event == 'Garage_open_normal':
-            self.garage_open_event(False)
+            self.garage_open_normal_event()
         elif event == 'Garage_open_alert':
-            self.garage_open_event(True)
+            self.garage_open_alert_event()
         elif event == 'Garage_closed':
             self.garage_close_event()
         else:
             self.doLog('Unhandled event: %s' % (event))
 
-    def garage_open_event(self, alert_flag):
+    def garage_open_normal_event(self):
         current_ts = time.time()
         if self.garageDoor_state == S_OPEN:
             how_long_opened = current_ts - self.lastOpenedTime
@@ -162,9 +162,9 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
                 self.setLights(S_ON)
                 self.lights_state = S_ON
             else:
-                self.doLog("Nothing to do...opened for %ds" % (how_long_opened))
+                print("Opened for %ds" % (how_long_opened))
         else:
-            self.doLog("Processing garage_open_event, alert = %d" % (alert_flag))
+            self.doLog("Processing garage_open_event...")
             if self.garageDoor_state == S_CLOSED or self.garageDoor_state == S_UNKNOWN:
                 self.garageDoor_state = S_OPEN
                 self.lastOpenedTime = current_ts
@@ -172,19 +172,26 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
                 self.setLights(self.lights_state)
                 self.buzzer(2)
 
-            if alert_flag:
-                self.setLights(S_OFF)
-                self.buzzer(2)
-                self.setLights(S_ON)
-                self.buzzer(2)
-                self.setLights(S_OFF)
-                self.buzzer(2)
-                self.setLights(S_ON)
-                self.lights_state = S_ON
+    def garage_open_alert_event(self):
+        self.doLog("Processing garage_open_alert_event...")
+        if self.garageDoor_state == S_CLOSED or self.garageDoor_state == S_UNKNOWN:
+            self.garageDoor_state = S_OPEN
+            self.lastOpenedTime = time.time()
+        self.setLights(S_OFF)
+        self.buzzer(2)
+        self.setLights(S_ON)
+        self.buzzer(2)
+        self.setLights(S_OFF)
+        self.buzzer(2)
+        self.setLights(S_ON)
+        self.lights_state = S_ON
 
     def garage_close_event(self):
         if self.garageDoor_state != S_CLOSED:
-            self.doLog("Processing garage_close_event")
+            if self.garageDoor_state == S_OPEN:
+                self.doLog("Processing garage_close_event...was open for %ds" % (time.time() - self.lastOpenedTime))
+            else:
+                self.doLog("Processing garage_close_event")
             self.garageDoor_state = S_CLOSED
             self.lastOpenedTime = 0
             self.lights_state = S_OFF
@@ -218,9 +225,9 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
             if not sim_mode:
                 buzzer_pin = self.gpio_settings['outputs']['buzzer']
                 io.output(buzzer_pin, io.HIGH)
-                time.sleep(0.5)
+                time.sleep(0.4)
                 io.output(buzzer_pin, io.LOW)
-                time.sleep(0.5)
+                time.sleep(0.4)
             else:
                 self.doLog("Buzzer: %d of %d..." % (idx+1, num_of_times))
 
