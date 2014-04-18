@@ -132,8 +132,8 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
         self.heartbeat_state = 0
         self.lights_state = S_OFF
         self.setLights(self.lights_state)
-        self.opened_threshold_1 = 60 * 10
-        self.opened_threshold_2 = 60 * 60
+        self.opened_threshold_1 = 60 * 1
+        self.opened_threshold_2 = 60 * 2
 
     def eventCB(self, event):
         if event == 'heartbeat':
@@ -148,18 +148,28 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
             self.doLog('Unhandled event: %s' % (event))
 
     def garage_open_event(self, alert_flag):
+        current_ts = time.time()
         if self.garageDoor_state == S_OPEN:
-            self.doLog("Nothing to do...opened for %ds" % (time.time() - self.lastOpenedTime))
+            how_long_opened = current_ts - self.lastOpenedTime
+            if how_long_opened > self.opened_threshold_2:
+                self.setLights(S_OFF)
+                self.buzzer(2)
+                self.setLights(S_ON)
+                self.lights_state = S_ON
+            elif how_long_opened > self.opened_threshold_1:
+                self.setLights(S_OFF)
+                self.setLights(S_ON)
+                self.lights_state = S_ON
+            else:
+                self.doLog("Nothing to do...opened for %ds" % (how_long_opened)
         else:
             self.doLog("Processing garage_open_event, alert = %d" % (alert_flag))
-            current_ts = time.time()
-            if self.lastOpenedTime == 0:
+            if self.garageDoor_state == S_CLOSED:
                 self.garageDoor_state = S_OPEN
                 self.lastOpenedTime = current_ts
                 self.lights_state = S_ON
                 self.setLights(self.lights_state)
                 self.buzzer(2)
-            how_long_opened = current_ts - self.lastOpenedTime
 
             if alert_flag:
                 self.setLights(S_OFF)
@@ -170,16 +180,6 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
                 self.buzzer(2)
                 self.setLights(S_ON)
                 self.lights_state = S_ON
-            else:
-                if how_long_opened > self.opened_threshold_1:
-                    self.setLights(S_OFF)
-                    self.setLights(S_ON)
-                    self.lights_state = S_ON
-                elif how_long_opened > self.opened_threshold_2:
-                    self.setLights(S_OFF)
-                    self.buzzer(2)
-                    self.setLights(S_ON)
-                    self.lights_state = S_ON
 
     def garage_close_event(self):
         if self.garageDoor_state != S_CLOSED:
