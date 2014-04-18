@@ -161,7 +161,7 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
                 self.setLights(S_ON)
                 self.lights_state = S_ON
             else:
-                self.doLog("Nothing to do...opened for %ds" % (how_long_opened)
+                self.doLog("Nothing to do...opened for %ds" % (how_long_opened))
         else:
             self.doLog("Processing garage_open_event, alert = %d" % (alert_flag))
             if self.garageDoor_state == S_CLOSED:
