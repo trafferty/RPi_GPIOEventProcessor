@@ -158,6 +158,7 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
                 self.lights_state = S_ON
             elif how_long_opened > self.opened_threshold_1:
                 self.setLights(S_OFF)
+                time.sleep(1)
                 self.setLights(S_ON)
                 self.lights_state = S_ON
             else:
@@ -217,9 +218,9 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
             if not sim_mode:
                 buzzer_pin = self.gpio_settings['outputs']['buzzer']
                 io.output(buzzer_pin, io.HIGH)
-                time.sleep(0.3)
+                time.sleep(0.5)
                 io.output(buzzer_pin, io.LOW)
-                time.sleep(0.2)
+                time.sleep(0.5)
             else:
                 self.doLog("Buzzer: %d of %d..." % (idx+1, num_of_times))
 
