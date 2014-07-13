@@ -15,7 +15,7 @@
 case "$1" in
   start)
     echo "Starting RPi_GarageMonitor"
-    /usr/bin/python /home/pi/src/RPi_GPIOEventProcessor/RPi_GPIOEventProcessor.py -g /home/pi/src/RPi_GPIOEventProcessor/GPIO.json -e /home/pi/src/RPi_GPIOEventProcessor/EventTriggers.json
+    /usr/bin/python /home/pi/src/RPi_GPIOEventProcessor/RPi_GPIOEventProcessor.py -g /home/pi/src/RPi_GPIOEventProcessor/GPIO.json -e /home/pi/src/RPi_GPIOEventProcessor/EventTriggers.json -l /home/pi/garageDoorLog.txt
     ;;
   stop)
     echo "Stopping RPi_GarageMonitor"
