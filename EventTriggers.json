@@ -2,7 +2,7 @@
   {
     "type": "daily",
     "start_time": "0:00:01",
-    "end_time": "7:00:00",
+    "end_time": "5:30:00",
     "input_events": [
       {
         "name": "garage_door",
@@ -18,7 +18,7 @@
   },
   {
     "type": "daily",
-    "start_time": "7:00:01",
+    "start_time": "5:30:01",
     "end_time": "21:00:00",
     "input_events": [
       {
@@ -66,22 +66,40 @@
         "event": "heartbeat"
       }
     ]
-  }
-,
+  },
+  {
+    "type": "daily",
+    "start_time": "5:20:00",
+    "end_time": "23:00:00",
+    "input_events": [
+      {
+        "name": "garage_PIR",
+        "value": 1,
+        "event": "motion_detected"
+      }
+    ]
+  },
   {
     "type": "daily",
     "start_time": "0:00:01",
+    "end_time": "5:20:10",
+    "input_events": [
+      {
+        "name": "garage_PIR",
+        "value": 1,
+        "event": "motion_detected_alert"
+      }
+    ]
+  },
+  {
+    "type": "daily",
+    "start_time": "23:00:01",
     "end_time": "23:59:59",
     "input_events": [
       {
-        "name": "garage_door",
+        "name": "garage_PIR",
         "value": 1,
-        "event": "heartbeat"
-      },
-      {
-        "name": "garage_door",
-        "value": 0,
-        "event": "heartbeat"
+        "event": "motion_detected_alert"
       }
     ]
   }
