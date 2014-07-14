@@ -18,11 +18,11 @@ except ImportError:
 (S_UNKNOWN, S_OPEN, S_CLOSED) = range(3)
 (S_OFF, S_ON) = range(2)
 
-class GarageDoorEventProcessor(GPIOEventProcessor):
-    """ garage Door Event Processor object"""
+class GarageEventProcessor(GPIOEventProcessor):
+    """ garage Event Processor object"""
 
-    def __init__(self, gpio_settings, sim_mode, log_file):
-        super(GarageDoorEventProcessor, self).__init__(gpio_settings, sim_mode, log_file)
+    def __init__(self, gpio_settings, sim_mode, log_file, data_log_uri):
+        super(GarageEventProcessor, self).__init__(gpio_settings, sim_mode, log_file, data_log_uri)
         self.garageDoor_state = S_UNKNOWN
         self.lastOpenedTime = 0
         self.lastClosedTime = 0
@@ -41,8 +41,27 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
             self.garage_open_alert_event()
         elif event == 'Garage_closed':
             self.garage_close_event()
+        elif event == 'motion_detected':
+            self.motion_detected()
+        elif event == 'motion_detected_alert':
+            self.motion_detected_alert()
         else:
             self.doLog('Unhandled event: %s' % (event))
+
+    def motion_detected_alert(self):
+        self.doLog("Intruder alert!")
+        self.dataLog(self.build_data_log_entry(True))
+        self.setLights(S_ON)
+        self.buzzer(6)
+        self.setLights(S_ON)
+        self.buzzer(6)
+        self.setLights(S_OFF)
+        self.buzzer(6)
+        self.setLights(S_OFF)
+
+    def motion_detected(self):
+        self.dataLog(self.build_data_log_entry(True))
+        self.doLog("Motion detected")
 
     def garage_open_normal_event(self):
         current_ts = time.time()
@@ -62,6 +81,7 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
                 print("Opened for %ds" % (how_long_opened))
         else:
             self.doLog("Processing garage_open_event...")
+            self.dataLog(self.build_data_log_entry(False))
             if self.garageDoor_state == S_CLOSED or self.garageDoor_state == S_UNKNOWN:
                 self.garageDoor_state = S_OPEN
                 self.lastOpenedTime = current_ts
@@ -74,6 +94,7 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
         if self.garageDoor_state == S_CLOSED or self.garageDoor_state == S_UNKNOWN:
             self.garageDoor_state = S_OPEN
             self.lastOpenedTime = time.time()
+            self.dataLog(self.build_data_log_entry(False))
         self.setLights(S_OFF)
         self.buzzer(2)
         self.setLights(S_ON)
@@ -86,7 +107,9 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
     def garage_close_event(self):
         if self.garageDoor_state != S_CLOSED:
             if self.garageDoor_state == S_OPEN:
-                self.doLog("Processing garage_close_event...was open for %ds" % (time.time() - self.lastOpenedTime))
+                amount_time_opened = time.time() - self.lastOpenedTime
+                self.doLog("Processing garage_close_event...was open for %ds" % (amount_time_opened))
+                self.dataLog(self.build_data_log_entry(False))
             else:
                 self.doLog("Processing garage_close_event")
             self.garageDoor_state = S_CLOSED
@@ -128,6 +151,9 @@ class GarageDoorEventProcessor(GPIOEventProcessor):
             else:
                 self.doLog("Buzzer: %d of %d..." % (idx+1, num_of_times))
 
+    def build_data_log_entry(self, motion_detected):
+        return "&door_status=%d&motion_detected=%d" % (self.garageDoor_state, motion_detected)
+
 if __name__ == '__main__':
 
     def sigint_handler(signal, frame):
@@ -139,7 +165,7 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--gpio_setup', type=str, help='JSON file defining GPIO setup', required=True)
     parser.add_argument('-e', '--events', type=str, help='JSON file defining the events to monitor', required=True)
     parser.add_argument('-l', '--log_file', type=str, default='', help='log file path for processor (optional)', required=False)
-    parser.add_argument('-k', '--log_key', type=str, default='', help='log file path for processor (optional)', required=False)
+    parser.add_argument('-u', '--data_log_uri', type=str, default='', help='uri for logging data to data.sparkfun.com (optional)', required=False)
     parser.add_argument('-s', '--sleep_time', type=float, default=1.0, help='sleep time for event loop, in secs')
     args = parser.parse_args()
 
@@ -147,7 +173,7 @@ if __name__ == '__main__':
     event_triggers = json.load(open(args.events, 'r'))
 
     eventMonitor = GPIOEventMonitor(gpio_settings, event_triggers, sim_mode, args.sleep_time)
-    eventProcessor = GarageDoorEventProcessor(gpio_settings, sim_mode, args.log_file)
+    eventProcessor = GarageEventProcessor(gpio_settings, sim_mode, args.log_file, args.data_log_uri)
 
     eventMonitor.addCallback(eventProcessor.eventCB)
     eventMonitor.start()

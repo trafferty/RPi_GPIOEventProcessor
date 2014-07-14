@@ -2,7 +2,12 @@ import sys
 import time
 import datetime
 import threading
-import random
+
+try:
+    import RPi.GPIO as io
+    io.setmode(io.BCM)
+except ImportError:
+    from random import randint
 
 (STOPPED, RUNNING) = range(2)
 
@@ -45,7 +50,7 @@ class GPIOEventMonitor:
             if not self.sim_mode:
                 self.input_states[key] = io.input(input[0])
             else:
-                self.input_states[key] = random.randint(0,1)
+                self.input_states[key] = randint(0,1)
 
     def withinRange(self, start_time, end_time):
         '''
