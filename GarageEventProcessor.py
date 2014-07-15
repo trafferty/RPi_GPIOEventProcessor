@@ -1,7 +1,10 @@
+#!/usr/bin/env python
+
 import signal
 import json
 import argparse
 import time
+from threading import Timer
 
 from gpioEventMonitor import GPIOEventMonitor
 from gpioEventProcessor import GPIOEventProcessor
@@ -26,6 +29,7 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.garageDoor_state = S_UNKNOWN
         self.lastOpenedTime = 0
         self.lastClosedTime = 0
+        self.MotionCtr = 0
         self.heartbeat_state = 0
         self.lights_state = S_OFF
         self.setLights(self.lights_state)
@@ -50,7 +54,7 @@ class GarageEventProcessor(GPIOEventProcessor):
 
     def motion_detected_alert(self):
         self.doLog("Intruder alert!")
-        self.dataLog(self.build_data_log_entry(True))
+        self.log_motion()
         self.setLights(S_ON)
         self.buzzer(6)
         self.setLights(S_ON)
@@ -60,8 +64,7 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.setLights(S_OFF)
 
     def motion_detected(self):
-        self.dataLog(self.build_data_log_entry(True))
-        self.doLog("Motion detected")
+        self.log_motion()
 
     def garage_open_normal_event(self):
         current_ts = time.time()
@@ -81,7 +84,7 @@ class GarageEventProcessor(GPIOEventProcessor):
                 print("Opened for %ds" % (how_long_opened))
         else:
             self.doLog("Processing garage_open_event...")
-            self.dataLog(self.build_data_log_entry(False))
+            self.dataLog(self.build_data_log_entry(S_OPEN, False))
             if self.garageDoor_state == S_CLOSED or self.garageDoor_state == S_UNKNOWN:
                 self.garageDoor_state = S_OPEN
                 self.lastOpenedTime = current_ts
@@ -94,7 +97,7 @@ class GarageEventProcessor(GPIOEventProcessor):
         if self.garageDoor_state == S_CLOSED or self.garageDoor_state == S_UNKNOWN:
             self.garageDoor_state = S_OPEN
             self.lastOpenedTime = time.time()
-            self.dataLog(self.build_data_log_entry(False))
+            self.dataLog(self.build_data_log_entry(S_OPEN, False))
         self.setLights(S_OFF)
         self.buzzer(2)
         self.setLights(S_ON)
@@ -109,7 +112,7 @@ class GarageEventProcessor(GPIOEventProcessor):
             if self.garageDoor_state == S_OPEN:
                 amount_time_opened = time.time() - self.lastOpenedTime
                 self.doLog("Processing garage_close_event...was open for %ds" % (amount_time_opened))
-                self.dataLog(self.build_data_log_entry(False))
+                self.dataLog(self.build_data_log_entry(S_CLOSED, False))
             else:
                 self.doLog("Processing garage_close_event")
             self.garageDoor_state = S_CLOSED
@@ -151,8 +154,22 @@ class GarageEventProcessor(GPIOEventProcessor):
             else:
                 self.doLog("Buzzer: %d of %d..." % (idx+1, num_of_times))
 
-    def build_data_log_entry(self, motion_detected):
-        return "&door_status=%d&motion_detected=%d" % (self.garageDoor_state, motion_detected)
+    def log_motion(self):
+        if self.MotionCtr == 0:
+            self.motion_log_timer = Timer(10, self.process_cumulative_motion)
+            self.motion_log_timer.start()
+        self.MotionCtr += 1
+        self.doLog(">>>>>>>>>>> Motion detected: %d" % (self.MotionCtr))
+
+    def process_cumulative_motion(self):
+        self.motion_log_timer.cancel()
+        self.dataLog(self.build_data_log_entry(self.garageDoor_state, True))
+        self.MotionCtr = 0
+        self.doLog(">>>>>>>>> logging motion")
+
+    def build_data_log_entry(self, door_state, motion_detected):
+        garageDoor_open = 1 if door_state == S_OPEN else 0
+        return "&door_status=%d&motion_detected=%d" % (garageDoor_open, motion_detected)
 
 if __name__ == '__main__':
 
