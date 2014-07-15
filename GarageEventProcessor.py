@@ -164,6 +164,7 @@ class GarageEventProcessor(GPIOEventProcessor):
     def process_cumulative_motion(self):
         self.motion_log_timer.cancel()
         self.dataLog(self.build_data_log_entry(self.garageDoor_state, True))
+        self.dataLog(self.build_data_log_entry(self.garageDoor_state, False))
         self.MotionCtr = 0
         self.doLog(">>>>>>>>> logging motion")
 
