@@ -1,13 +1,17 @@
 {
   "outputs": {
     "heartbeat_led": 25,
-    "buzzer": 4,
-    "audio_stream_relay": 22,
+    "buzzer": 22,
+    "horn_relay": 24,
     "lights_relay": 23
   },
   "inputs": {
     "garage_door": [
       18,
+      true
+    ],
+    "garage_hall": [
+      27,
       true
     ],
     "garage_PIR": [
