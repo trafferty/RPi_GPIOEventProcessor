@@ -1,6 +1,9 @@
 import time
 import urllib2
 
+class MyException(Exception):
+    pass
+
 class GPIOEventProcessor(object):
     """ Event Processor object"""
 
@@ -23,5 +26,11 @@ class GPIOEventProcessor(object):
 
     def dataLog(self, data):
         if len(self.data_log_uri_base) > 0: 
-            rep = urllib2.urlopen("%s%s" % (self.data_log_uri_base, data)).read()
-            self.doLog("Logging data: %s. reply: %s" % ( data, rep))
+            try:
+                rep = urllib2.urlopen("%s%s" % (self.data_log_uri_base, data), timeout = 1).read()
+                self.doLog("Logging data: %s. reply: %s" % ( data, rep))
+            except urllib2.URLError as e:
+                print type(e)    #not catch
+            except socket.timeout as e:
+                print type(e)    #catched
+                raise MyException("There was an error: %r" % e)
