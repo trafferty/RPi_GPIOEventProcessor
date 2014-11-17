@@ -22,6 +22,9 @@ class GPIOEventProcessor(object):
             f.close()
 
     def dataLog(self, data):
-        if len(self.data_log_uri_base) > 0: 
-            rep = urllib2.urlopen("%s%s" % (self.data_log_uri_base, data)).read()
-            self.doLog("Logging data: %s. reply: %s" % ( data, rep))
+        try:
+            if len(self.data_log_uri_base) > 0: 
+                rep = urllib2.urlopen("%s%s" % (self.data_log_uri_base, data)).read()
+                self.doLog("Logging data: %s. reply: %s" % ( data, rep))
+        except:
+            self.doLog("Error connecting to data logger; skipping post")

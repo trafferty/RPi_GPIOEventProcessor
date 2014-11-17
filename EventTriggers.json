@@ -6,12 +6,12 @@
     "input_events": [
       {
         "name": "garage_door",
-        "value": 0,
+        "value": 1,
         "event": "Garage_open_alert"
       },
       {
         "name": "garage_door",
-        "value": 1,
+        "value": 0,
         "event": "Garage_closed"
       }
     ]
@@ -23,12 +23,12 @@
     "input_events": [
       {
         "name": "garage_door",
-        "value": 0,
+        "value": 1,
         "event": "Garage_open_normal"
       },
       {
         "name": "garage_door",
-        "value": 1,
+        "value": 0,
         "event": "Garage_closed"
       }
     ]
@@ -40,12 +40,12 @@
     "input_events": [
       {
         "name": "garage_door",
-        "value": 0,
+        "value": 1,
         "event": "Garage_open_alert"
       },
       {
         "name": "garage_door",
-        "value": 1,
+        "value": 0,
         "event": "Garage_closed"
       }
     ]
