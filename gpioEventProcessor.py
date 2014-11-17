@@ -1,6 +1,9 @@
 import time
 import urllib2
 
+class MyException(Exception):
+    pass
+
 class GPIOEventProcessor(object):
     """ Event Processor object"""
 
@@ -22,9 +25,9 @@ class GPIOEventProcessor(object):
             f.close()
 
     def dataLog(self, data):
-        try:
-            if len(self.data_log_uri_base) > 0: 
+        if len(self.data_log_uri_base) > 0: 
+            try:
                 rep = urllib2.urlopen("%s%s" % (self.data_log_uri_base, data)).read()
                 self.doLog("Logging data: %s. reply: %s" % ( data, rep))
-        except:
-            self.doLog("Error connecting to data logger; skipping post")
+            except:
+                self.doLog("Error connecting to data logger; skipping post")
