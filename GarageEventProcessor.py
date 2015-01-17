@@ -35,22 +35,31 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.setLights(self.lights_state)
         self.opened_threshold_1 = 60 * 10
         self.opened_threshold_2 = 60 * 60
+        self.reset_limit = 60 * 60
+        self.reset_timestamp = time.time() - self.reset_limit
 
     def eventCB(self, event):
         if event == 'heartbeat':
             self.heartbeat()
-        elif event == 'Garage_open_normal':
-            self.garage_open_normal_event()
-        elif event == 'Garage_open_alert':
-            self.garage_open_alert_event()
+        elif event == 'reset_button_pressed':
+            self.reset_button_pressed()
         elif event == 'Garage_closed':
             self.garage_close_event()
-        elif event == 'motion_detected':
-            self.motion_detected()
         elif event == 'motion_detected_alert':
             self.motion_detected_alert()
-        else:
-            self.doLog('Unhandled event: %s' % (event))
+        elif time.time() - self.reset_timestamp > self.reset_limit:
+            if event == 'Garage_open_normal':
+                self.garage_open_normal_event()
+            elif event == 'Garage_open_alert':
+                self.garage_open_alert_event()
+            elif event == 'motion_detected':
+                self.motion_detected()
+            else:
+                self.doLog('Unhandled event: %s' % (event))
+
+    def reset_button_pressed(self):
+        self.reset_timestamp = time.time()
+        self.buzzer(1)
 
     def motion_detected_alert(self):
         self.doLog("Intruder alert!")

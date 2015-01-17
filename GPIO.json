@@ -14,6 +14,10 @@
       27,
       true
     ],
+    "reset_button": [
+      4,
+      true
+    ],
     "garage_PIR": [
       17,
       false

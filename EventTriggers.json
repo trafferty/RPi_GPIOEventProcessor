@@ -69,6 +69,18 @@
   },
   {
     "type": "daily",
+    "start_time": "0:00:01",
+    "end_time": "23:59:59",
+    "input_events": [
+      {
+        "name": "reset_button",
+        "value": 1,
+        "event": "reset_button_pressed"
+      }
+    ]
+  },
+  {
+    "type": "daily",
     "start_time": "5:20:00",
     "end_time": "23:00:00",
     "input_events": [
