@@ -74,7 +74,7 @@
     "input_events": [
       {
         "name": "reset_button",
-        "value": 1,
+        "value": 0,
         "event": "reset_button_pressed"
       }
     ]
