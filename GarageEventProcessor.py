@@ -61,6 +61,7 @@ class GarageEventProcessor(GPIOEventProcessor):
                 self.doLog('Unhandled event: %s' % (event))
         if self.alert_active:
             if time.time() - self.alert_time > self.alert_duration:
+                self.doLog("Cancelling alert: duration exceded")
                 self.alert_active = False
                 self.horn_on(False)
                 self.setLights(S_OFF)
