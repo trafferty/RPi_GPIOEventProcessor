@@ -2,7 +2,7 @@
   {
     "type": "daily",
     "start_time": "0:00:01",
-    "end_time": "5:30:00",
+    "end_time": "5:15:00",
     "input_events": [
       {
         "name": "garage_door",
@@ -18,8 +18,8 @@
   },
   {
     "type": "daily",
-    "start_time": "5:30:01",
-    "end_time": "21:00:00",
+    "start_time": "5:15:01",
+    "end_time": "22:00:00",
     "input_events": [
       {
         "name": "garage_door",
@@ -35,7 +35,7 @@
   },
     {
     "type": "daily",
-    "start_time": "21:00:01",
+    "start_time": "22:00:01",
     "end_time": "23:59:59",
     "input_events": [
       {
@@ -81,8 +81,8 @@
   },
   {
     "type": "daily",
-    "start_time": "5:20:00",
-    "end_time": "23:00:00",
+    "start_time": "5:15:01",
+    "end_time": "23:59:59",
     "input_events": [
       {
         "name": "garage_PIR",
@@ -94,19 +94,7 @@
   {
     "type": "daily",
     "start_time": "0:00:01",
-    "end_time": "5:20:10",
-    "input_events": [
-      {
-        "name": "garage_PIR",
-        "value": 1,
-        "event": "motion_detected_alert"
-      }
-    ]
-  },
-  {
-    "type": "daily",
-    "start_time": "23:00:01",
-    "end_time": "23:59:59",
+    "end_time": "5:15:00",
     "input_events": [
       {
         "name": "garage_PIR",

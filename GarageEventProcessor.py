@@ -33,11 +33,14 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.heartbeat_state = 0
         self.lights_state = S_OFF
         self.setLights(self.lights_state)
-        self.opened_threshold_1 = 60 * 10
-        self.opened_threshold_2 = 60 * 60
+        self.opened_threshold_1 = 60 * 60   # if garage door opened > 60m
+        self.opened_threshold_2 = 60 * 120  # if garage door opened > 120m
         self.reset_limit = 60 * 60
         self.reset_timestamp = time.time() - self.reset_limit
-
+        self.alert_active = False
+        self.alert_time = 0
+        self.alert_duration = 60 * 5   # 5m max alert duration
+        
     def eventCB(self, event):
         if event == 'heartbeat':
             self.heartbeat()
@@ -45,6 +48,8 @@ class GarageEventProcessor(GPIOEventProcessor):
             self.reset_button_pressed()
         elif event == 'Garage_closed':
             self.garage_close_event()
+        elif event == 'motion_detected':
+            self.motion_detected()
         elif event == 'motion_detected_alert':
             self.motion_detected_alert()
         elif time.time() - self.reset_timestamp > self.reset_limit:
@@ -52,25 +57,27 @@ class GarageEventProcessor(GPIOEventProcessor):
                 self.garage_open_normal_event()
             elif event == 'Garage_open_alert':
                 self.garage_open_alert_event()
-            elif event == 'motion_detected':
-                self.motion_detected()
             else:
                 self.doLog('Unhandled event: %s' % (event))
+        if self.alert_active:
+            if time.time() - self.alert_time > self.alert_duration:
+                self.alert_active = False
+                self.horn_on(False)
+                self.setLights(S_OFF)
 
     def reset_button_pressed(self):
         self.reset_timestamp = time.time()
+        self.doLog("Reset button pressed...")
         self.buzzer(1)
 
     def motion_detected_alert(self):
+        if not self.alert_active:
+            self.alert_time = time.time()
+            self.alert_active = True
+            self.horn_on(True)
+            self.setLights(S_ON)
         self.doLog("Intruder alert!")
         self.log_motion()
-        self.setLights(S_ON)
-        self.buzzer(6)
-        self.setLights(S_ON)
-        self.buzzer(6)
-        self.setLights(S_OFF)
-        self.buzzer(6)
-        self.setLights(S_OFF)
 
     def motion_detected(self):
         self.log_motion()
@@ -81,12 +88,12 @@ class GarageEventProcessor(GPIOEventProcessor):
             how_long_opened = current_ts - self.lastOpenedTime
             if how_long_opened > self.opened_threshold_2:
                 self.setLights(S_OFF)
-                self.buzzer(2)
+                self.buzzer(1)
                 self.setLights(S_ON)
                 self.lights_state = S_ON
             elif how_long_opened > self.opened_threshold_1:
                 self.setLights(S_OFF)
-                time.sleep(1)
+                time.sleep(0.5)
                 self.setLights(S_ON)
                 self.lights_state = S_ON
             else:
@@ -162,6 +169,16 @@ class GarageEventProcessor(GPIOEventProcessor):
                 time.sleep(0.4)
             else:
                 self.doLog("Buzzer: %d of %d..." % (idx+1, num_of_times))
+
+    def horn_on(self, on):
+        if not sim_mode:
+            horn_pin = self.gpio_settings['outputs']['horn_relay']
+            if on:
+                io.output(horn_pin, io.LOW)
+            else:
+                io.output(horn_pin, io.HIGH)
+        else:
+            self.doLog("Horn: %s" % ("on" if on else "off"))
 
     def log_motion(self):
         if self.MotionCtr == 0:
