@@ -175,9 +175,9 @@ class GarageEventProcessor(GPIOEventProcessor):
         if not sim_mode:
             horn_pin = self.gpio_settings['outputs']['horn_relay']
             if on:
-                io.output(horn_pin, io.LOW)
-            else:
                 io.output(horn_pin, io.HIGH)
+            else:
+                io.output(horn_pin, io.LOW)
         else:
             self.doLog("Horn: %s" % ("on" if on else "off"))
 
