@@ -1,7 +1,7 @@
 [
   {
     "type": "daily",
-    "start_time": "0:00:01",
+    "start_time": "22:00:01",
     "end_time": "5:15:00",
     "input_events": [
       {
@@ -33,20 +33,27 @@
       }
     ]
   },
-    {
+  {
     "type": "daily",
-    "start_time": "22:00:01",
+    "start_time": "5:15:01",
     "end_time": "23:59:59",
     "input_events": [
       {
-        "name": "garage_door",
+        "name": "garage_PIR",
         "value": 1,
-        "event": "Garage_open_alert"
-      },
+        "event": "motion_detected"
+      }
+    ]
+  },
+  {
+    "type": "daily",
+    "start_time": "0:00:01",
+    "end_time": "5:15:00",
+    "input_events": [
       {
-        "name": "garage_door",
-        "value": 0,
-        "event": "Garage_closed"
+        "name": "garage_PIR",
+        "value": 1,
+        "event": "motion_detected_alert"
       }
     ]
   },
@@ -76,30 +83,6 @@
         "name": "reset_button",
         "value": 0,
         "event": "reset_button_pressed"
-      }
-    ]
-  },
-  {
-    "type": "daily",
-    "start_time": "5:15:01",
-    "end_time": "23:59:59",
-    "input_events": [
-      {
-        "name": "garage_PIR",
-        "value": 1,
-        "event": "motion_detected"
-      }
-    ]
-  },
-  {
-    "type": "daily",
-    "start_time": "0:00:01",
-    "end_time": "5:15:00",
-    "input_events": [
-      {
-        "name": "garage_PIR",
-        "value": 1,
-        "event": "motion_detected_alert"
       }
     ]
   }

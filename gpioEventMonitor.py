@@ -56,15 +56,19 @@ class GPIOEventMonitor:
         '''
         start_time and end_time are both strings representing 
         a time in HH:MM:SS format, with a range of 00:00:00 to
-        23:59:59.  end_time must be later than start_time, and 
-        they cannot span more than a full day.
+        23:59:59.  if start_time > end_time (ie, start at 20:00:00
+        and end at 06:00:00) it is assumed that this range spans
+        two days (start_time in one day, end_time in the next).
         '''
         st = [int(n) for n in start_time.split(':')]
         et = [int(n) for n in end_time.split(':')]
         current = datetime.datetime.now().time()
         start   = datetime.time(*st)
         end     = datetime.time(*et)
-        return start <= current <= end
+        if start > end:
+            return (current <= end) or (current >= start)
+        else:
+            return start <= current <= end
 
     def start(self):
         self.alive = True
