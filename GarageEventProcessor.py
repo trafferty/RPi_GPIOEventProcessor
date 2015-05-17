@@ -11,6 +11,7 @@ from gpioEventProcessor import GPIOEventProcessor
 
 try:
     import RPi.GPIO as io
+    io.setwarnings(False)
     io.setmode(io.BCM)
     sim_mode = False
 except ImportError:
@@ -40,6 +41,10 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.alert_active = False
         self.alert_time = 0
         self.alert_duration = 60 * 5   # 5m max alert duration
+	self.setLights(S_OFF)
+	self.horn_on(True)
+	time.sleep(0.200)
+	self.horn_on(False)
         
     def eventCB(self, event):
         if event == 'heartbeat':
@@ -175,9 +180,9 @@ class GarageEventProcessor(GPIOEventProcessor):
         if not sim_mode:
             horn_pin = self.gpio_settings['outputs']['horn_relay']
             if on:
-                io.output(horn_pin, io.HIGH)
-            else:
                 io.output(horn_pin, io.LOW)
+            else:
+                io.output(horn_pin, io.HIGH)
         else:
             self.doLog("Horn: %s" % ("on" if on else "off"))
 
