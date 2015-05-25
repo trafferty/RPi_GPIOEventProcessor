@@ -118,8 +118,8 @@ class GarageEventProcessor(GPIOEventProcessor):
                 self.lights_state = S_ON
                 self.setLights(self.lights_state)
                 self.buzzer(2)
-        if self.garageLights_state == S_OFF:
-            self.toggleGarageLight(S_ON)
+            if self.garageLights_state == S_OFF:
+                self.toggleGarageLight(S_ON)
 
     def garage_open_alert_event(self):
         self.doLog("Processing garage_open_alert_event...")
@@ -135,8 +135,9 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.buzzer(2)
         self.setLights(S_ON)
         self.lights_state = S_ON
-        if self.garageLights_state == S_OFF:
-            self.toggleGarageLight(S_ON)
+        if self.garageDoor_state != S_OPEN:        
+            if self.garageLights_state == S_OFF:
+                self.toggleGarageLight(S_ON)
 
     def garage_close_event(self):
         if self.garageDoor_state != S_CLOSED:
@@ -144,6 +145,8 @@ class GarageEventProcessor(GPIOEventProcessor):
                 amount_time_opened = time.time() - self.lastOpenedTime
                 self.doLog("Processing garage_close_event...was open for %ds" % (amount_time_opened))
                 self.dataLog(self.build_data_log_entry(S_CLOSED, False))
+                if self.garageLights_state == S_OFF:
+                    self.toggleGarageLight(S_ON)
             else:
                 self.doLog("Processing garage_close_event")
             self.garageDoor_state = S_CLOSED
@@ -151,8 +154,6 @@ class GarageEventProcessor(GPIOEventProcessor):
             self.lights_state = S_OFF
             self.setLights(self.lights_state)
             self.buzzer(3)
-        if self.garageLights_state == S_OFF:
-            self.toggleGarageLight(S_ON)
 
     def heartbeat(self):
         # flip the state...
