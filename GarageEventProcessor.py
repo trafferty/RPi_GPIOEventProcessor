@@ -42,7 +42,7 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.alert_active = False
         self.alert_time = 0
         self.alert_duration = 60 * 5   # 5m max alert duration
-        self.garage_light_on_duration = 60 * 5   # 5m max 
+        self.garage_light_on_duration = 60 * 3   # 5m max 
         self.TurnGarageLightOn_cmd = "heyu fon e2"
         self.TurnGarageLightOff_cmd = "heyu foff e2"
         self.garageLights_state = S_OFF
@@ -167,7 +167,7 @@ class GarageEventProcessor(GPIOEventProcessor):
             self.doLog("Heartbeat signal received. State = %d" % self.heartbeat_state)
         if self.garageLights_state == S_ON:
             if time.time() - self.garageLightOnTime > self.garage_light_on_duration:
-                toggleGarageLight(S_OFF)
+                self.toggleGarageLight(S_OFF)
 
     def setLights(self, on):
         if not sim_mode:
@@ -218,14 +218,16 @@ class GarageEventProcessor(GPIOEventProcessor):
         garageDoor_open = 1 if door_state == S_OPEN else 0
         return "&door_status=%d&motion_detected=%d" % (garageDoor_open, motion_detected)
 
-    def toggleGarageLight(garageLightState):
+    def toggleGarageLight(self, garageLightState):
         if garageLightState == S_ON:
             self.garageLights_state = S_ON
-            process = subprocess.Popen(TurnGarageLightOn_cmd.split(), stdout=subprocess.PIPE)
+            process = subprocess.Popen(self.TurnGarageLightOn_cmd.split(), stdout=subprocess.PIPE)
             self.garageLightOnTime = time.time()
+            self.doLog("turning garage light on")
         else:
             self.garageLights_state = S_OFF
-            process = subprocess.Popen(TurnGarageLightOff_cmd.split(), stdout=subprocess.PIPE)
+            process = subprocess.Popen(self.TurnGarageLightOff_cmd.split(), stdout=subprocess.PIPE)
+            self.doLog("turning garage light off")
 
 if __name__ == '__main__':
 
