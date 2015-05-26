@@ -222,12 +222,14 @@ class GarageEventProcessor(GPIOEventProcessor):
     def toggleGarageLight(self, garageLightState):
         if garageLightState == S_ON:
             self.garageLights_state = S_ON
-            process = subprocess.Popen(self.TurnGarageLightOn_cmd.split(), stdout=subprocess.PIPE)
+            #process = subprocess.Popen(self.TurnGarageLightOn_cmd.split(), stdout=subprocess.PIPE)
+            subprocess.call(self.TurnGarageLightOn_cmd.split())
             self.garageLightOnTime = time.time()
             self.doLog("turning garage light on")
         else:
             self.garageLights_state = S_OFF
-            process = subprocess.Popen(self.TurnGarageLightOff_cmd.split(), stdout=subprocess.PIPE)
+            #process = subprocess.Popen(self.TurnGarageLightOff_cmd.split(), stdout=subprocess.PIPE)
+            subprocess.call(self.TurnGarageLightOff_cmd.split())
             self.doLog("turning garage light off")
 
 if __name__ == '__main__':
