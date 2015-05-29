@@ -5,7 +5,7 @@ import json
 import argparse
 import time
 from threading import Timer
-import subprocess
+import x10
 
 from gpioEventMonitor import GPIOEventMonitor
 from gpioEventProcessor import GPIOEventProcessor
@@ -43,13 +43,11 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.alert_time = 0
         self.alert_duration = 60 * 5   # 5m max alert duration
         self.garage_light_on_duration = 60 * 3   # 5m max 
-        self.TurnGarageLightOn_cmd = "heyu fon e2"
-        self.TurnGarageLightOff_cmd = "heyu foff e2"
         self.garageLights_state = S_OFF
-	self.setLights(S_OFF)
-	self.horn_on(True)
-	time.sleep(0.200)
-	self.horn_on(False)
+        self.setLights(S_OFF)
+        self.horn_on(True)
+        time.sleep(0.200)
+        self.horn_on(False)
         
     def eventCB(self, event):
         if event == 'heartbeat':
@@ -222,14 +220,12 @@ class GarageEventProcessor(GPIOEventProcessor):
     def toggleGarageLight(self, garageLightState):
         if garageLightState == S_ON:
             self.garageLights_state = S_ON
-            #process = subprocess.Popen(self.TurnGarageLightOn_cmd.split(), stdout=subprocess.PIPE)
-            subprocess.call(self.TurnGarageLightOn_cmd.split())
+            x10.sendCommands('/dev/ttyUSB0', 'E2 On')
             self.garageLightOnTime = time.time()
             self.doLog("turning garage light on")
         else:
             self.garageLights_state = S_OFF
-            #process = subprocess.Popen(self.TurnGarageLightOff_cmd.split(), stdout=subprocess.PIPE)
-            subprocess.call(self.TurnGarageLightOff_cmd.split())
+            x10.sendCommands('/dev/ttyUSB0', 'E2 Off')
             self.doLog("turning garage light off")
 
 if __name__ == '__main__':
