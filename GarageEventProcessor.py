@@ -96,14 +96,14 @@ class GarageEventProcessor(GPIOEventProcessor):
         if self.garageDoor_state == S_OPEN:
             how_long_opened = current_ts - self.lastOpenedTime
             if how_long_opened > self.opened_threshold_2:
-                self.setLights(S_OFF)
+                #self.setLights(S_OFF)
                 self.buzzer(1)
-                self.setLights(S_ON)
+                #self.setLights(S_ON)
                 self.lights_state = S_ON
             elif how_long_opened > self.opened_threshold_1:
-                self.setLights(S_OFF)
+                #self.setLights(S_OFF)
                 time.sleep(0.5)
-                self.setLights(S_ON)
+                #self.setLights(S_ON)
                 self.lights_state = S_ON
             else:
                 print("Opened for %ds" % (how_long_opened))
@@ -125,13 +125,13 @@ class GarageEventProcessor(GPIOEventProcessor):
             self.garageDoor_state = S_OPEN
             self.lastOpenedTime = time.time()
             self.dataLog(self.build_data_log_entry(S_OPEN, False))
-        self.setLights(S_OFF)
+        #self.setLights(S_OFF)
         self.buzzer(2)
-        self.setLights(S_ON)
+        #self.setLights(S_ON)
         self.buzzer(2)
-        self.setLights(S_OFF)
+        #self.setLights(S_OFF)
         self.buzzer(2)
-        self.setLights(S_ON)
+        #self.setLights(S_ON)
         self.lights_state = S_ON
         if self.garageDoor_state != S_OPEN:        
             if self.garageLights_state == S_OFF:
