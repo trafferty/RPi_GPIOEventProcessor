@@ -2,6 +2,7 @@ import sys
 import time
 import datetime
 import threading
+import logging
 
 try:
     import RPi.GPIO as io
@@ -10,6 +11,8 @@ except ImportError:
     from random import randint
 
 (STOPPED, RUNNING) = range(2)
+
+logger = logging.getLogger("EventMonitor")
 
 class GPIOEventMonitor:
     """ GPIO Event monitor object"""
@@ -24,11 +27,11 @@ class GPIOEventMonitor:
         if not sim_mode:
             self.setupGPIO()
         self.input_states = {}
-        print "initialized GPIO event processor object"
+        logger.info("initialized GPIO event processor object")
 
     def addCallback(self, callbackFuncion):
         self.eventCallbackList.append(callbackFuncion)
-        print "callback added"
+        logger.info("callback added")
         callbackFuncion("test callback")
         
     def getRunState(self):
@@ -79,7 +82,7 @@ class GPIOEventMonitor:
         self.state = RUNNING
 
     def stop(self):
-        print "Shutting down event processing..."
+        logger.info("Shutting down event processing...")
         self.alive = False
         self.state = STOPPED
 
@@ -87,7 +90,7 @@ class GPIOEventMonitor:
         self.processing_thread.join()
 
     def monitorEvents(self):
-        print "Event processing thread started."
+        logger.info("Event processing thread started.")
         while self.alive:
             self.updateInputs()
             for trigger in self.event_triggers:
