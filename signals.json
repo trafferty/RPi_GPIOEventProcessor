@@ -1,0 +1,15 @@
+{
+    "garage_light_on" : {"type": "http_get", "url": "http://localhost:8000/garage_light_on"},
+    "garage_light_off": {"type": "http_get", "url": "http://localhost:8000/garage_light_off"},
+
+    "sig_tower_red_on" :   {"type": "http_get", "url": "http://localhost:8000/sig_tower_red_on"},
+    "sig_tower_red_off":   {"type": "http_get", "url": "http://localhost:8000/sig_tower_red_off"},
+    "sig_tower_amber_on" : {"type": "http_get", "url": "http://localhost:8000/sig_tower_amber_on"},
+    "sig_tower_amber_off": {"type": "http_get", "url": "http://localhost:8000/sig_tower_amber_off"},
+    "sig_tower_blue_on" :  {"type": "http_get", "url": "http://localhost:8000/sig_tower_blue_on"},
+    "sig_tower_blue_off":  {"type": "http_get", "url": "http://localhost:8000/sig_tower_blue_off"},
+    "sig_tower_green_on" : {"type": "http_get", "url": "http://localhost:8000/sig_tower_green_on"},
+    "sig_tower_green_off": {"type": "http_get", "url": "http://localhost:8000/sig_tower_green_off"},
+    "sig_tower_alarm_on" : {"type": "http_get", "url": "http://localhost:8000/sig_tower_alarm_on"},
+    "sig_tower_alarm_off": {"type": "http_get", "url": "http://localhost:8000/sig_tower_alarm_off"}
+}
