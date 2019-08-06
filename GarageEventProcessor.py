@@ -245,17 +245,6 @@ if __name__ == '__main__':
         eventMonitor.stop()
     signal.signal(signal.SIGINT, sigint_handler)
 
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s.%(msecs)03d (%(name)10s) [%(levelname)7s]: %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler('garage_monitor.log', mode='a')
-        ])
-    logger = logging.getLogger()
-
-
     parser = argparse.ArgumentParser(description='Event monitor system for Raspberry Pi')
     parser.add_argument('-g', '--gpio_setup', type=str, help='JSON file defining GPIO setup', required=True)
     parser.add_argument('-e', '--events', type=str, help='JSON file defining the events to monitor', required=True)
@@ -264,11 +253,22 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--data_log_uri', type=str, default='', help='uri for logging data to data.sparkfun.com (optional)', required=False)
     args = parser.parse_args()
 
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s.%(msecs)03d (%(name)10s) [%(levelname)7s]: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(args.log_file, mode='a')
+        ])
+    logger = logging.getLogger()
+
+
     gpio_settings = json.load(open(args.gpio_setup, 'r'))
     event_triggers = json.load(open(args.events, 'r'))
     signal_defs = json.load(open(args.signals, 'r'))
 
-    eventMonitor = GPIOEventMonitor(gpio_settings, event_triggers, sim_mode, 1.0)
+    eventMonitor = GPIOEventMonitor(gpio_settings, event_triggers, sim_mode, 2.0)
     eventProcessor = GarageEventProcessor(gpio_settings, sim_mode, args.log_file, args.data_log_uri, signal_defs)
 
     eventMonitor.addCallback(eventProcessor.eventCB)
