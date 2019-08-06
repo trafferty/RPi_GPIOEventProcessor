@@ -29,8 +29,8 @@ logger = logging.getLogger("GarEventProc")
 class GarageEventProcessor(GPIOEventProcessor):
     """ garage Event Processor object"""
 
-    def __init__(self, gpio_settings, sim_mode, log_file, data_log_uri, signal_defs):
-        super(GarageEventProcessor, self).__init__(gpio_settings, sim_mode, log_file, data_log_uri, signal_defs)
+    def __init__(self, gpio_settings, sim_mode, data_log_uri, signal_defs):
+        super(GarageEventProcessor, self).__init__(gpio_settings, sim_mode, data_log_uri, signal_defs)
         self.garageDoor_state = S_UNKNOWN
         self.lastOpenedTime = 0
         self.lastClosedTime = 0
@@ -263,13 +263,12 @@ if __name__ == '__main__':
         ])
     logger = logging.getLogger()
 
-
     gpio_settings = json.load(open(args.gpio_setup, 'r'))
     event_triggers = json.load(open(args.events, 'r'))
     signal_defs = json.load(open(args.signals, 'r'))
 
     eventMonitor = GPIOEventMonitor(gpio_settings, event_triggers, sim_mode, 2.0)
-    eventProcessor = GarageEventProcessor(gpio_settings, sim_mode, args.log_file, args.data_log_uri, signal_defs)
+    eventProcessor = GarageEventProcessor(gpio_settings, sim_mode, args.data_log_uri, signal_defs)
 
     eventMonitor.addCallback(eventProcessor.eventCB)
     eventMonitor.start()

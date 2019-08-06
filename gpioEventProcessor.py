@@ -13,10 +13,9 @@ class MyException(Exception):
 class GPIOEventProcessor(object):
     """ Event Processor object"""
 
-    def __init__(self, gpio_settings, sim_mode, log_file, data_log_uri_base, signal_defs):
+    def __init__(self, gpio_settings, sim_mode, data_log_uri_base, signal_defs):
         self.gpio_settings = gpio_settings
         self.sim_mode = sim_mode
-        self.log_file = log_file
         self.data_log_uri_base = data_log_uri_base
         self.signal_defs = signal_defs
 
