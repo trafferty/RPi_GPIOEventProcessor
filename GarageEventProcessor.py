@@ -2,6 +2,7 @@
 
 import signal
 import json
+import os.path
 import argparse
 import time
 import logging
@@ -9,7 +10,7 @@ from threading import Timer
 
 from gpioEventMonitor import GPIOEventMonitor
 from gpioEventProcessor import GPIOEventProcessor
-from signals import Signals
+from actions import Actions
 
 try:
     import RPi.GPIO as io
@@ -29,8 +30,8 @@ logger = logging.getLogger("GarEventProc")
 class GarageEventProcessor(GPIOEventProcessor):
     """ garage Event Processor object"""
 
-    def __init__(self, gpio_settings, sim_mode, data_log_uri, signal_defs):
-        super(GarageEventProcessor, self).__init__(gpio_settings, sim_mode, data_log_uri, signal_defs)
+    def __init__(self, gpio_settings, sim_mode, data_log_uri, action_defs):
+        super(GarageEventProcessor, self).__init__(gpio_settings, sim_mode, data_log_uri, action_defs)
         self.garageDoor_state = S_UNKNOWN
         self.lastOpenedTime = 0
         self.lastClosedTime = 0
@@ -52,7 +53,7 @@ class GarageEventProcessor(GPIOEventProcessor):
         time.sleep(0.200)
         self.horn_on(False)
 
-        self.signals = Signals(signal_defs)
+        self.actions = Actions(action_defs)
         
     def eventCB(self, event):
         if event == 'heartbeat':
@@ -168,7 +169,7 @@ class GarageEventProcessor(GPIOEventProcessor):
             else:
                 io.output(heartbeat_led, io.HIGH)
         else:
-            logger.info("Heartbeat signal received. State = %d" % self.heartbeat_state)
+            logger.info("Heartbeat action received. State = %d" % self.heartbeat_state)
         if self.garageLights_state == S_ON:
             if time.time() - self.garageLightOnTime > self.garage_light_on_duration:
                 self.toggleGarageLight(S_OFF)
@@ -225,14 +226,14 @@ class GarageEventProcessor(GPIOEventProcessor):
     def toggleGarageLight(self, garageLightState):
         if garageLightState == S_ON:
             self.garageLights_state = S_ON
-            if self.signals.sendSignal('garage_light_on'):
+            if self.actions.sendAction('garage_light_on'):
                 logger.info("turned garage light on")
             else:
                 logger.warn("Error turning garage light on")
             self.garageLightOnTime = time.time()
         else:
             self.garageLights_state = S_OFF
-            if self.signals.sendSignal('garage_light_off'):
+            if self.actions.sendAction('garage_light_off'):
                 logger.info("turned garage light off")
             else:
                 logger.warn("Error turning garage light off")
@@ -248,8 +249,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Event monitor system for Raspberry Pi')
     parser.add_argument('-g', '--gpio_setup', type=str, help='JSON file defining GPIO setup', required=True)
     parser.add_argument('-e', '--events', type=str, help='JSON file defining the events to monitor', required=True)
-    parser.add_argument('-s', '--signals', type=str, help='JSON file defining the signals', required=True)
-    parser.add_argument('-l', '--log_file', type=str, default='', help='log file path for processor (optional)', required=False)
+    parser.add_argument('-a', '--actions', type=str, help='JSON file defining the actions', required=True)
+    parser.add_argument('-l', '--log_file', type=str, default='~/garageDoorLog.txt', help='log file path for processor (optional)', required=False)
     parser.add_argument('-u', '--data_log_uri', type=str, default='', help='uri for logging data to data.sparkfun.com (optional)', required=False)
     args = parser.parse_args()
 
@@ -259,16 +260,16 @@ if __name__ == '__main__':
         datefmt='%Y-%m-%d %H:%M:%S',
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler(args.log_file, mode='a')
+            logging.FileHandler(os.path.expanduser(args.log_file), mode='a')
         ])
     logger = logging.getLogger()
 
     gpio_settings = json.load(open(args.gpio_setup, 'r'))
     event_triggers = json.load(open(args.events, 'r'))
-    signal_defs = json.load(open(args.signals, 'r'))
+    action_defs = json.load(open(args.actions, 'r'))
 
     eventMonitor = GPIOEventMonitor(gpio_settings, event_triggers, sim_mode, 2.0)
-    eventProcessor = GarageEventProcessor(gpio_settings, sim_mode, args.data_log_uri, signal_defs)
+    eventProcessor = GarageEventProcessor(gpio_settings, sim_mode, args.data_log_uri, action_defs)
 
     eventMonitor.addCallback(eventProcessor.eventCB)
     eventMonitor.start()

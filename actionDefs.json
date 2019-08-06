@@ -11,5 +11,8 @@
     "sig_tower_green_on" : {"type": "http_get", "url": "http://192.168.129.201/sig_tower_green_on"},
     "sig_tower_green_off": {"type": "http_get", "url": "http://192.168.129.201/sig_tower_green_off"},
     "sig_tower_alarm_on" : {"type": "http_get", "url": "http://192.168.129.201/sig_tower_alarm_on"},
-    "sig_tower_alarm_off": {"type": "http_get", "url": "http://192.168.129.201/sig_tower_alarm_off"}
+    "sig_tower_alarm_off": {"type": "http_get", "url": "http://192.168.129.201/sig_tower_alarm_off"},
+
+    "test_action_1": {"type": "http_get", "url": "http://localhost/test_action_1"},
+    "test_action_2": {"type": "http_get", "url": "http://localhost/test_action_2"}
 }
