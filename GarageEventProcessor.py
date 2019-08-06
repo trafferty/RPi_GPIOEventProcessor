@@ -226,14 +226,14 @@ class GarageEventProcessor(GPIOEventProcessor):
     def toggleGarageLight(self, garageLightState):
         if garageLightState == S_ON:
             self.garageLights_state = S_ON
-            if self.actions.sendAction('garage_light_on'):
+            if self.actions.processAction('garage_light_on'):
                 logger.info("turned garage light on")
             else:
                 logger.warn("Error turning garage light on")
             self.garageLightOnTime = time.time()
         else:
             self.garageLights_state = S_OFF
-            if self.actions.sendAction('garage_light_off'):
+            if self.actions.processAction('garage_light_off'):
                 logger.info("turned garage light off")
             else:
                 logger.warn("Error turning garage light off")

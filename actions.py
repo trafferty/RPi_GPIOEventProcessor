@@ -23,7 +23,7 @@ class Actions(object):
             if 'url' not in v:
                 raise KeyError("Missing key in action definition: url")
 
-    def sendAction(self, action_str):
+    def processAction(self, action_str):
         try:
             for k, v in self.action_defs.items():
                 if k == action_str:
@@ -78,16 +78,16 @@ def main():
     # test all the actions in the given actionsDef file.  If IP address is invalid
     # then you should get timeout failures except for the test actions
     for k in action_defs.keys():
-        logger.info("Sending action: %s" % (k))
-        if actions.sendAction(k):
+        logger.info("Processing action: %s" % (k))
+        if actions.processAction(k):
             logger.info(" ...OK!")
         else:
             logger.info(" ...Error!")
 
     # Test for invalid actions...should just 
     for k in ['invalid_actionStr', 'foo', 'bar', 'garage_light_explode']:
-        logger.info("Sending action: %s" % (k))
-        if actions.sendAction(k):
+        logger.info("Processing action: %s" % (k))
+        if actions.processAction(k):
             logger.info(" ...OK!")
         else:
             logger.info(" ...Error! Invalid action?")
