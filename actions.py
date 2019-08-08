@@ -42,7 +42,7 @@ class Actions(object):
             r.raise_for_status()
             return True
         except requests.exceptions.Timeout:
-            logger.error(f"Timed out after {self.timeout}s sending action to URL: %s" % (url))
+            logger.error("Timed out after %ds sending action to URL: %s" % (self.timeout, url))
             return False
         except requests.exceptions.ConnectionError:
             logger.error("ConnectionError sending action to URL: %s" % (url))
