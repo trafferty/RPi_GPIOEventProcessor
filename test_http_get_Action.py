@@ -39,10 +39,11 @@ if __name__ == '__main__':
     actions = Actions(action_defs)
 
     test_duration_s = args.duration_h * 3600
-    logger.info("Test duration: %0.2f hours (%d sec)" % (args.duration, test_duration_s))
+    logger.info("Test duration: %0.2f hours (%d sec)" % (args.duration_h, test_duration_s))
 
     garageLights_state = S_OFF
     def toggleGarageLight():
+        global garageLights_state
         if garageLights_state == S_OFF:
             if actions.processAction('garage_light_on'):
                 garageLights_state = S_ON
@@ -55,7 +56,6 @@ if __name__ == '__main__':
                 logger.info("turned garage light off")
             else:
                 logger.warn("Error turning garage light off")
-            logger.info("turning garage light off")
 
     logger.info("Starting test...")
     start_ts = time.time()
@@ -64,4 +64,4 @@ if __name__ == '__main__':
         logger.info("Pausing for %ds..." % (args.pause_s))
         time.sleep(args.pause_s)
 
-    logger.info("Test completed after %0.2f hours" % (args.duration))
+    logger.info("Test completed after %0.2f hours" % (args.duration_h))
