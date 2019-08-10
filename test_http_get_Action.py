@@ -48,20 +48,29 @@ if __name__ == '__main__':
             if actions.processAction('garage_light_on'):
                 garageLights_state = S_ON
                 logger.info("turned garage light on")
+                return True
             else:
                 logger.warn("Error turning garage light on")
+                return False
         else:
             if actions.processAction('garage_light_off'):
                 garageLights_state = S_OFF
                 logger.info("turned garage light off")
+                return True
             else:
                 logger.warn("Error turning garage light off")
+                return False
 
+    fail_cnt = 0
+    good_cnt = 0
     logger.info("Starting test...")
     start_ts = time.time()
     while start_ts+test_duration_s > time.time():
-        toggleGarageLight()
-        logger.info("Pausing for %ds..." % (args.pause_s))
+        if toggleGarageLight():
+            good_cnt += 1
+        else:
+            fail_cnt += 1
+        logger.info("Num good: %d, Num fails: %d.  Pausing for %ds..." % (good_cnt, fail_cnt, args.pause_s))
         time.sleep(args.pause_s)
 
     logger.info("Test completed after %0.2f hours" % (args.duration_h))
