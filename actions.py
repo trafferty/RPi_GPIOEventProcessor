@@ -1,6 +1,7 @@
 import requests
 import logging
 import argparse
+import time
 
 logger = logging.getLogger("Actions")
 
@@ -12,9 +13,10 @@ class Actions(object):
         to cause some action, ie, turning on/off a light
      """
 
-    def __init__(self, action_defs, timeout=5):
+    def __init__(self, action_defs, timeout=5, retrys=3):
         self.action_defs = action_defs
         self.timeout = timeout
+        self.retrys = retrys
 
         # verify that action defs is okay
         for k, v in self.action_defs.items():
@@ -29,12 +31,23 @@ class Actions(object):
                 if k == action_str:
                     # we found a matching action
                     if v['type'] == "http_get":
-                        logger.debug("Sending get request to %s" % (v['url']))
-                        return self.doHTML_get(v['url'])
+                        try_cnt = 0
+                        while try_cnt < self.retys:
+                            logger.debug("(%d) Sending get request to %s" % (try_cnt+1, v['url']))
+                            if self.doHTML_get(v['url']):
+                                return True
+                            try_cnt += 1
+                            time.sleep(0.200)
+                        logger.error("Too many attempts (%d), giving up." % (try_cnt))
+                        return False
                     else:
                         logger.error("Invalid action type: %s" % (v['type']))
+                        return False
+            logger.error("Could not find matching action definition: %s" % (action_str))
+            return False
         except Exception as e:
             logger.error("Error trying to send action: ", action_str)
+            return False
 
     def doHTML_get(self, url):
         try:
