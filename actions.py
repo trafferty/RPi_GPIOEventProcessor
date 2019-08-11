@@ -32,7 +32,7 @@ class Actions(object):
                     # we found a matching action
                     if v['type'] == "http_get":
                         try_cnt = 0
-                        while try_cnt < self.retys:
+                        while try_cnt < self.retrys:
                             logger.debug("(%d) Sending get request to %s" % (try_cnt+1, v['url']))
                             if self.doHTML_get(v['url']):
                                 return True
