@@ -60,6 +60,40 @@
   {
     "type": "daily",
     "start_time": "0:00:01",
+    "end_time": "5:15:00",
+    "input_events": [
+      {
+        "name": "garage_door",
+        "value": 1,
+        "event": "garage_PIR_active"
+      },
+      {
+        "name": "garage_door",
+        "value": 0,
+        "event": "garage_PIR_active"
+      }
+    ]
+  },
+  {
+    "type": "daily",
+    "start_time": "5:15:01",
+    "end_time": "11:59:59",
+    "input_events": [
+      {
+        "name": "garage_door",
+        "value": 1,
+        "event": "garage_PIR_inactive"
+      },
+      {
+        "name": "garage_door",
+        "value": 0,
+        "event": "garage_PIR_inactive"
+      }
+    ]
+  },
+  {
+    "type": "daily",
+    "start_time": "0:00:01",
     "end_time": "23:59:59",
     "input_events": [
       {

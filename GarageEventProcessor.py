@@ -37,6 +37,7 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.lastClosedTime = 0
         self.MotionCtr = 0
         self.heartbeat_state = 0
+        self.garage_PIR_active_state = 0
         self.lights_state = S_OFF
         self.setLights(self.lights_state)
         self.opened_threshold_1 = 60 * 180   # if garage door opened > 180m
@@ -58,6 +59,10 @@ class GarageEventProcessor(GPIOEventProcessor):
     def eventCB(self, event):
         if event == 'heartbeat':
             self.heartbeat()
+        elif event == 'garage_PIR_active':
+            self.garage_PIR_active(True)
+        elif event == 'garage_PIR_inactive':
+            self.garage_PIR_active(False)
         elif event == 'reset_button_pressed':
             self.reset_button_pressed()
         elif event == 'Garage_closed':
@@ -174,6 +179,16 @@ class GarageEventProcessor(GPIOEventProcessor):
             if time.time() - self.garageLightOnTime > self.garage_light_on_duration:
                 self.toggleGarageLight(S_OFF)
 
+    def garage_PIR_active(self, state):
+        if state:
+            if self.garage_PIR_active_state == 0:
+                self.garage_PIR_active_state = 1
+                self.actions.processAction('sig_tower_orange_on')
+        else:
+            if self.garage_PIR_active_state == 1:
+                self.garage_PIR_active_state = 0
+                self.actions.processAction('sig_tower_orange_off')
+
     def setLights(self, on):
         if not sim_mode:
             lights_relay = self.gpio_settings['outputs']['lights_relay']
@@ -231,6 +246,8 @@ class GarageEventProcessor(GPIOEventProcessor):
             else:
                 logger.warn("Error turning garage light on")
             self.garageLightOnTime = time.time()
+
+            self.actions.processAction('sig_tower_red_on')
         else:
             self.garageLights_state = S_OFF
             if self.actions.processAction('garage_light_off'):
@@ -238,6 +255,8 @@ class GarageEventProcessor(GPIOEventProcessor):
             else:
                 logger.warn("Error turning garage light off")
             logger.info("turning garage light off")
+            self.actions.processAction('sig_tower_red_off')
+
 
 if __name__ == '__main__':
 
