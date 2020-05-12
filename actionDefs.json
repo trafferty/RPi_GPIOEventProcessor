@@ -2,6 +2,7 @@
     "garage_light_on" : {"type": "http_get", "url": "http://192.168.129.200/RELAY=ON"},
     "garage_light_off": {"type": "http_get", "url": "http://192.168.129.200/RELAY=OFF"},
 
+    "sig_tower_all_off"     : {"type": "http_get", "url": "http://192.168.129.203/all_off"},
     "sig_tower_red_on"      : {"type": "http_get", "url": "http://192.168.129.203/red_on"},
     "sig_tower_red_flash"   : {"type": "http_get", "url": "http://192.168.129.203/red_flash"},
     "sig_tower_red_off"     : {"type": "http_get", "url": "http://192.168.129.203/red_off"},

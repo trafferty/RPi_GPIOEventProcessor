@@ -47,7 +47,7 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.alert_active = False
         self.alert_time = 0
         self.alert_duration = 60 * 5   # 5m max alert duration
-        self.garage_light_on_duration = 60 * 3   # 5m max 
+        self.garage_light_on_duration = 60 * 5   # 5m max 
         self.garageLights_state = S_OFF
         self.setLights(S_OFF)
         self.horn_on(True)
@@ -55,6 +55,7 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.horn_on(False)
 
         self.actions = Actions(action_defs)
+        self.actions.processAction('sig_tower_all_off')
         
     def eventCB(self, event):
         if event == 'heartbeat':
@@ -71,19 +72,20 @@ class GarageEventProcessor(GPIOEventProcessor):
             self.motion_detected()
         elif event == 'motion_detected_alert':
             self.motion_detected_alert()
-        elif time.time() - self.reset_timestamp > self.reset_limit:
-            if event == 'Garage_open_normal':
-                self.garage_open_normal_event()
-            elif event == 'Garage_open_alert':
-                self.garage_open_alert_event()
-            else:
-                logger.error('Unhandled event: %s' % (event))
+        elif event == 'Garage_open_normal':
+            self.garage_open_normal_event()
+        elif event == 'Garage_open_alert':
+            self.garage_open_alert_event()
+        else:
+            logger.error('Unhandled event: %s' % (event))
+
         if self.alert_active:
             if time.time() - self.alert_time > self.alert_duration:
                 logger.info("Cancelling alert: duration exceded")
                 self.alert_active = False
                 self.horn_on(False)
                 self.setLights(S_OFF)
+                self.actions.processAction('sig_tower_red_off')
 
     def reset_button_pressed(self):
         self.reset_timestamp = time.time()
@@ -96,6 +98,7 @@ class GarageEventProcessor(GPIOEventProcessor):
             self.alert_active = True
             self.horn_on(True)
             self.setLights(S_ON)
+            self.actions.processAction('sig_tower_red_flash')
         logger.warn("Intruder alert!")
         self.log_motion()
 
@@ -108,9 +111,10 @@ class GarageEventProcessor(GPIOEventProcessor):
             how_long_opened = current_ts - self.lastOpenedTime
             if how_long_opened > self.opened_threshold_2:
                 #self.setLights(S_OFF)
-                self.buzzer(1)
+                #self.buzzer(1)
                 #self.setLights(S_ON)
                 self.lights_state = S_ON
+                self.actions.processAction('sig_tower_green_flash')
             elif how_long_opened > self.opened_threshold_1:
                 #self.setLights(S_OFF)
                 time.sleep(0.5)
@@ -126,6 +130,7 @@ class GarageEventProcessor(GPIOEventProcessor):
                 self.lastOpenedTime = current_ts
                 self.lights_state = S_ON
                 self.setLights(self.lights_state)
+                self.actions.processAction('sig_tower_green_on')
                 self.buzzer(2)
             if self.garageLights_state == S_OFF:
                 self.toggleGarageLight(S_ON)
@@ -144,6 +149,7 @@ class GarageEventProcessor(GPIOEventProcessor):
         self.buzzer(2)
         #self.setLights(S_ON)
         self.lights_state = S_ON
+        self.actions.processAction('sig_tower_green_flash')
         if self.garageDoor_state != S_OPEN:        
             if self.garageLights_state == S_OFF:
                 self.toggleGarageLight(S_ON)
@@ -162,6 +168,7 @@ class GarageEventProcessor(GPIOEventProcessor):
             self.lastOpenedTime = 0
             self.lights_state = S_OFF
             self.setLights(self.lights_state)
+            self.actions.processAction('sig_tower_green_off')
             self.buzzer(3)
 
     def heartbeat(self):
@@ -247,7 +254,6 @@ class GarageEventProcessor(GPIOEventProcessor):
                 logger.warn("Error turning garage light on")
             self.garageLightOnTime = time.time()
 
-            self.actions.processAction('sig_tower_red_on')
         else:
             self.garageLights_state = S_OFF
             if self.actions.processAction('garage_light_off'):
@@ -255,8 +261,6 @@ class GarageEventProcessor(GPIOEventProcessor):
             else:
                 logger.warn("Error turning garage light off")
             logger.info("turning garage light off")
-            self.actions.processAction('sig_tower_red_off')
-
 
 if __name__ == '__main__':
 

@@ -77,7 +77,7 @@
   {
     "type": "daily",
     "start_time": "5:15:01",
-    "end_time": "11:59:59",
+    "end_time": "23:59:59",
     "input_events": [
       {
         "name": "garage_door",
