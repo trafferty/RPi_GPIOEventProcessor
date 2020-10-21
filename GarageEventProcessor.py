@@ -190,11 +190,11 @@ class GarageEventProcessor(GPIOEventProcessor):
         if state:
             if self.garage_PIR_active_state == 0:
                 self.garage_PIR_active_state = 1
-                self.actions.processAction('sig_tower_orange_on')
+                self.actions.processAction('sig_tower_amber_on')
         else:
             if self.garage_PIR_active_state == 1:
                 self.garage_PIR_active_state = 0
-                self.actions.processAction('sig_tower_orange_off')
+                self.actions.processAction('sig_tower_amber_off')
 
     def setLights(self, on):
         if not sim_mode:
